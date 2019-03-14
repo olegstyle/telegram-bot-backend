@@ -131,7 +131,7 @@ class TelegramBot implements BotInterface
     {
         $counter = $this->getWelcomeMessageCounter($botChat);
         $counter++;
-        if ($counter === 1) { // TODO from database
+        if ($counter >= 1) { // TODO from database
             $counter = 0;
         }
         Cache::forever($this->getWelcomeMessageCounterCacheKey($botChat), $counter);
@@ -151,7 +151,7 @@ class TelegramBot implements BotInterface
 
     public function shouldSendWelcomeMessage(BotChat $botChat): bool
     {
-        return $this->getWelcomeMessageCounter($botChat) === 1;
+        return $this->getWelcomeMessageCounter($botChat) === 0;
     }
 
     protected function setOffsetForChat(BotChat $botChat, int $offset): void
