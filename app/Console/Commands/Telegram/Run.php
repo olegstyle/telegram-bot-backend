@@ -21,17 +21,20 @@ class Run extends Command
     public function handle(): void
     {
         $this->loop = Factory::create();
-        $this->runBot(new Bot());
+        foreach (Bot::all() as $bot) { // TODO pagination?
+            $this->runBot($bot);
+        }
         $this->loop->run();
     }
 
     protected function runBot(Bot $bot): void
     {
         $botService = new TelegramBot($this->loop, $bot);
-        $this->runBotChat($botService, new BotChat());
+        foreach ($bot->chats as $chat) {
+            $this->runBotChat($botService, $chat);
+        }
     }
 
-    protected $i = 0;
     protected function runBotChat(TelegramBot $botService, BotChat $botChat): void
     {
         $intervalCall = function () use ($botService, $botChat) {
