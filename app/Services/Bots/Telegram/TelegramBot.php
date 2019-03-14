@@ -64,7 +64,7 @@ class TelegramBot implements BotInterface
 
     protected function getOffsetCacheKey(BotChat $botChat): string
     {
-        return 'telegram-offset:' . $this->bot->_id . ':' . $botChat->_id;
+        return 'telegram-offset:' . $this->bot->id . ':' . $botChat->id;
     }
 
     protected function handleUpdates(BotChat $botChat, TraversableCustomType $updatesArray): Promise
@@ -114,11 +114,11 @@ class TelegramBot implements BotInterface
         $username = $name . ' ' . $lasName;
 
         $welcomeList = [ // TODO - move data to BD
-            'Hello [' . $username . '](tg://user?id=' . $id . '). Welcome to the CoinDeal community!',
-            'Welcome [' . $username . '](tg://user?id=' . $id . ') to CoinDeal community. If you have any questions feel free to ask. We are here to help.',
+            'Hello [' . $username . '](tg://user?id=' . $id . '). Welcome to the community!',
+            'Welcome [' . $username . '](tg://user?id=' . $id . ') to community. If you have any questions feel free to ask. We are here to help.',
             'Hi [' . $username . '](tg://user?id=' . $id . ')! Welcome to our community! Check the pinned message in the top for general info. If you have any questions, feel free to ask!',
-            'Thank you for joining CoinDeal [' . $username . '](tg://user?id=' . $id . ')! Glad to have you here in our community. ',
-            'Hello [' . $username . '](tg://user?id=' . $id . ')! Welcome to CoinDeal Telegram group! We encourage you to read our pinned message containing links on our updates and further information or check out our website as well. If you have any feedback or questions, we will gladly answer them.',
+            'Thank you for joining [' . $username . '](tg://user?id=' . $id . ')! Glad to have you here in our community. ',
+            'Hello [' . $username . '](tg://user?id=' . $id . ')! Welcome to Telegram group! We encourage you to read our pinned message containing links on our updates and further information or check out our website as well. If you have any feedback or questions, we will gladly answer them.',
             'Welcome! We have a pinned message above to give you some basic details about our project, feel free to look around!',
             'Thank you for joining our group! We are all happy to have you here. We offer 24/7 assistance for new and existing members so feel free to ask questions!',
             'Hi, we\'re glad to have you here! Feel free to ask us any questions here!',
@@ -146,7 +146,7 @@ class TelegramBot implements BotInterface
 
     protected function getWelcomeMessageCounterCacheKey(BotChat $botChat): string
     {
-        return 'telegram-welcome-counter:' . $this->bot->_id . ':' . $botChat->_id;
+        return 'telegram-welcome-counter:' . $this->bot->id . ':' . $botChat->id;
     }
 
     public function shouldSendWelcomeMessage(BotChat $botChat): bool
