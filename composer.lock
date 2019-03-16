@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a6532bf49c4bc0842a5cd314bf55e52e",
+    "content-hash": "36e8c133cb54eca5424df694d4c8eb4b",
     "packages": [
         {
             "name": "amphp/amp",
@@ -1881,6 +1881,44 @@
                 "php"
             ],
             "time": "2019-02-16T20:54:15+00:00"
+        },
+        {
+            "name": "olegstyle/enum",
+            "version": "v1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/olegstyle/enum.git",
+                "reference": "47732d735989aa63072f3a4ce333fea5d0e66fba"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/olegstyle/enum/zipball/47732d735989aa63072f3a4ce333fea5d0e66fba",
+                "reference": "47732d735989aa63072f3a4ce333fea5d0e66fba",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.1"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "OlegStyle\\Enum\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Oleh Borysenko",
+                    "email": "olegstyle1@gmail.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "PHP Enumerator",
+            "homepage": "http://bodev.pro/",
+            "time": "2018-04-19T14:37:21+00:00"
         },
         {
             "name": "opis/closure",

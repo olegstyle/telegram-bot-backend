@@ -2,6 +2,7 @@
 
 namespace App\Services\Bots\Telegram;
 
+use App\Enums\Telegram\ChatType;
 use App\Models\Bot;
 use App\Models\BotChat;
 use App\Services\Bots\BotInterface;
@@ -18,6 +19,7 @@ use unreal4u\TelegramAPI\Abstracts\TraversableCustomType;
 use unreal4u\TelegramAPI\HttpClientRequestHandler;
 use unreal4u\TelegramAPI\Telegram\Methods\GetUpdates;
 use unreal4u\TelegramAPI\Telegram\Methods\SendMessage;
+use unreal4u\TelegramAPI\Telegram\Types\Update;
 use unreal4u\TelegramAPI\TgLog;
 
 class TelegramBot implements BotInterface
@@ -35,16 +37,16 @@ class TelegramBot implements BotInterface
         $this->logger = app(Logger::class);
     }
 
-    public function run(BotChat $botChat): PromiseInterface
+    public function run(): PromiseInterface
     {
         $tgLog = $this->getTelegram($this->loop);
 
         $getUpdates = new GetUpdates();
-        $getUpdates->offset = $this->getOffsetForChat($botChat);
+        $getUpdates->offset = $this->getOffset();
 
         return $tgLog->performApiRequest($getUpdates)->then(
-            function (TraversableCustomType $updatesArray) use ($botChat) {
-                return $this->handleUpdates($botChat, $updatesArray);
+            function (TraversableCustomType $updatesArray) {
+                return $this->handleUpdates($updatesArray);
             },
             function (Exception $exception) {
                 Log::error('Exception ' . get_class($exception) . ' caught, message: ' . $exception->getMessage());
@@ -57,62 +59,78 @@ class TelegramBot implements BotInterface
         return new TgLog($this->bot->token, new HttpClientRequestHandler($loop), $this->logger);
     }
 
-    protected function getOffsetForChat(BotChat $botChat): int
+    protected function getOffset(): int
     {
-        return (int) Cache::get($this->getOffsetCacheKey($botChat), 0);
+        return (int) Cache::get($this->getOffsetCacheKey(), 0);
     }
 
-    protected function getOffsetCacheKey(BotChat $botChat): string
+    protected function getOffsetCacheKey(): string
     {
-        return 'telegram-offset:' . $this->bot->id . ':' . $botChat->id;
+        return 'telegram-offset:' . $this->bot->id;
     }
 
-    protected function handleUpdates(BotChat $botChat, TraversableCustomType $updatesArray): Promise
+    protected function handleUpdates(TraversableCustomType $updatesArray): Promise
     {
-        return new Promise(function (Closure $resolve/*, \Closure $reject*/) use ($botChat, $updatesArray) {
+        return new Promise(function (Closure $resolve/*, \Closure $reject*/) use ($updatesArray) {
             if ($updatesArray === null) {
                 return;
             }
-            $latestOffset = $this->getOffsetForChat($botChat);
-
             foreach ($updatesArray as $update) {
-                // skip offset id
-                if ($update->update_id === $latestOffset) {
-                    continue;
-                }
-                // skip bots and not new chat member listener ???
-                if ($update->message->new_chat_member === null || $update->message->new_chat_member->is_bot) {
-                    continue;
-                }
-                // skip old messages
-                if (Carbon::createFromTimestamp($update->message->date)->lessThan(Carbon::now()->subMinutes(static::MAX_MINUTES_FOR_HANDLE_UPDATE))) {
-                    continue;
-                }
-
-                // TODO MOVE TO ANOTHER CLASS
-                // increment welcome message counter
-                $this->incrementWelcomeMessageCounter($botChat);
-                if (!$this->shouldSendWelcomeMessage($botChat)) {
-                    continue;
-                }
-
-                $this->sendWelcomeMessage( // TODO MOVE PART OF CODE TO ANOTHER CLASS + EVENT
-                    $botChat,
-                    $update->message->new_chat_member->first_name,
-                    $update->message->new_chat_member->last_name,
-                    $update->message->new_chat_member->id
-                );
+                $this->handleUpdate($update);
             }
 
-            $this->setOffsetForChat($botChat, (int) end($updatesArray->data)->update_id);
+            $this->setOffset((int) end($updatesArray->data)->update_id);
             $resolve();
         });
     }
 
-    protected function sendWelcomeMessage(BotChat $botChat, string $name, string $lasName, $id): PromiseInterface // Move to another class
+    protected function getChatById(string $chatId): ?BotChat
     {
-        $username = $name . ' ' . $lasName;
+        return $this->bot->chats->where('chat_id', $chatId)->first();
+    }
 
+    protected function handleUpdate(Update $update): void
+    {
+        // skip offset id
+        if ($update->update_id === $this->getOffset()) {
+            return;
+        }
+        $message = $update->message;
+        // skip old messages
+        if (Carbon::createFromTimestamp($update->message->date)->lessThan(Carbon::now()->subMinutes(static::MAX_MINUTES_FOR_HANDLE_UPDATE))) {
+            return;
+        }
+
+        if (! ChatType::isValid($message->chat->type) || ! (new ChatType($message->chat->type))->isSupported()) {
+            return; // unknown chat type or not supported
+        }
+
+        $chat = $this->getChatById($message->chat->username);
+        if ($chat === null) {
+            return; // unknown chat
+        }
+
+        // skip bots and not new chat member listener ???
+        if ($message->new_chat_member === null || $message->new_chat_member->is_bot) {
+            return;
+        }
+
+        // TODO MOVE TO ANOTHER CLASS
+        // increment welcome message counter
+        $this->incrementWelcomeMessageCounter($chat);
+        if (!$this->shouldSendWelcomeMessage($chat)) {
+            return;
+        }
+
+        $this->sendWelcomeMessage( // TODO MOVE PART OF CODE TO ANOTHER CLASS + EVENT
+            $chat,
+            $message->new_chat_member->first_name . ' ' . $message->new_chat_member->last_name,
+            $update->message->new_chat_member->id
+        );
+    }
+
+    protected function sendWelcomeMessage(BotChat $botChat, string $username, $id): PromiseInterface // Move to another class
+    {
         $welcomeList = [ // TODO - move data to BD
             'Hello [' . $username . '](tg://user?id=' . $id . '). Welcome to the community!',
             'Welcome [' . $username . '](tg://user?id=' . $id . ') to community. If you have any questions feel free to ask. We are here to help.',
@@ -154,9 +172,9 @@ class TelegramBot implements BotInterface
         return $this->getWelcomeMessageCounter($botChat) === 0;
     }
 
-    protected function setOffsetForChat(BotChat $botChat, int $offset): void
+    protected function setOffset(int $offset): void
     {
-        Cache::forever($this->getOffsetCacheKey($botChat), $offset);
+        Cache::forever($this->getOffsetCacheKey(), $offset);
     }
 
     public function sendMessage(BotChat $botChat, string $message, string $parseMode = 'Markdown'): PromiseInterface

@@ -3,7 +3,6 @@
 namespace App\Console\Commands\Telegram;
 
 use App\Models\Bot;
-use App\Models\BotChat;
 use App\Services\Bots\Telegram\TelegramBot;
 use Illuminate\Console\Command;
 use React\EventLoop\Factory;
@@ -21,27 +20,19 @@ class Run extends Command
     public function handle(): void
     {
         $this->loop = Factory::create();
-        foreach (Bot::all() as $bot) { // TODO pagination?
-            $this->runBot($bot);
+        foreach (Bot::with('chats')->get() as $bot) {
+            $this->botRun(new TelegramBot($this->loop, $bot));
         }
         $this->loop->run();
     }
 
-    protected function runBot(Bot $bot): void
+    protected function botRun(TelegramBot $bot): void
     {
-        $botService = new TelegramBot($this->loop, $bot);
-        foreach ($bot->chats as $chat) {
-            $this->runBotChat($botService, $chat);
-        }
-    }
-
-    protected function runBotChat(TelegramBot $botService, BotChat $botChat): void
-    {
-        $intervalCall = function () use ($botService, $botChat) {
-            $this->loop->addTimer(self::INTERVAL_BETWEEN_RUNS, function () use ($botService, $botChat) {
-                $this->runBotChat($botService, $botChat);
+        $intervalCall = function () use ($bot) {
+            $this->loop->addTimer(self::INTERVAL_BETWEEN_RUNS, function () use ($bot) {
+                $this->botRun($bot);
             });
         };
-        $botService->run($botChat)->then($intervalCall, $intervalCall);
+        $bot->run()->then($intervalCall, $intervalCall);
     }
 }

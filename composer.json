@@ -12,6 +12,7 @@
         "fideloper/proxy": "^4.0",
         "laravel/framework": "5.8.*",
         "laravel/tinker": "^1.0",
+        "olegstyle/enum": "^1.0",
         "react/event-loop": "^1.1",
         "unreal4u/telegram-api": "^3.4"
     },
