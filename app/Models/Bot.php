@@ -2,13 +2,31 @@
 
 namespace App\Models;
 
+use App\Models\Traits\HasUser;
+use App\Models\Traits\HasEncryptedFields;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
 /**
- * TODO
- * @property string id
- * @property string token
+ * @property string $label
+ * @property string $token
+ *
+ * @property-read Collection|BotChat[] $chats
  */
 class Bot extends BaseModel
 {
-    public $_id = '1';
-    public $token = '648333641:AAFiGDFChyQGYnp-7BtBEeMz7OCxClbQ4rk';
+    use HasEncryptedFields;
+    use HasUser;
+
+    protected $table = 'bots';
+
+    public function chats(): HasMany
+    {
+        return $this->hasMany(BotChat::class);
+    }
+
+    protected function getEncryptedFields(): array
+    {
+        return ['token'];
+    }
 }

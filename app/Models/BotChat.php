@@ -2,15 +2,16 @@
 
 namespace App\Models;
 
+use App\Models\Traits\HasBot;
+
 /**
- * TODO
  * @property string id
+ * @property string $label
  * @property string chat_id
- * @property string chat_label
  */
 class BotChat extends BaseModel
 {
-    public $id = '1';
-    public $chat_id = 'bot_testing_group';
-    public $chat_label = 'Testing';
+    use HasBot;
+
+    protected $table = 'bot_chats';
 }

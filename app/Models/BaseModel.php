@@ -8,18 +8,11 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
- * Class BaseModel
- * @package App\Models
- *
- * @author Oleh Borysenko <oleg.borisenko@morefromit.com>
  *
  * Fields
- * @property int $h_id
- * @property Carbon h_created_at
- * @property Carbon h_updated_at
- *
- * Appends
- * @property-read int|string $id
+ * @property int $id
+ * @property Carbon created_at
+ * @property Carbon updated_at
  *
  * Scopes
  * @method static Builder|static whereId(int|string $id)
@@ -30,24 +23,6 @@ use Illuminate\Support\Str;
  */
 abstract class BaseModel extends Model
 {
-    protected $primaryKey = 'h_id';
-
-    const CREATED_AT = 'h_created_at';
-
-    const UPDATED_AT = 'h_updated_at';
-
-    protected $appends = ['id'];
-
-    /**
-     * This is useful for some packages where ->id is hardcoded
-     *
-     * @return int|string Some models have id as integer and other could have uuid
-     */
-    public function getIdAttribute()
-    {
-        return $this->{$this->getKeyName()} ?? 0;
-    }
-
     /**
      * @param Builder $builder
      * @param int|string $id Some models have id as integer and other could have uuid
@@ -66,16 +41,6 @@ abstract class BaseModel extends Model
     public function scopeOrderDescByCreatedAt(Builder $builder): Builder
     {
         return $builder->orderByDesc('h_created_at');
-    }
-
-    public function getForeignKey(): string
-    {
-        return 'e_' . Str::snake(class_basename($this));
-    }
-
-    public static function getModelForeignKey(): string
-    {
-        return app(static::class)->getForeignKey();
     }
 
     public static function getTableName(): string
