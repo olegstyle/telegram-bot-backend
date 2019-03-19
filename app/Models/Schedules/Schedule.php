@@ -43,7 +43,7 @@ class Schedule extends BaseModel
 
     public function getExpressionAttribute(): CronExpression
     {
-        return CronExpression::factory($this->expression);
+        return CronExpression::factory($this->inlineExpression);
     }
 
     public function action(): HasOne

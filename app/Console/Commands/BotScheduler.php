@@ -6,6 +6,7 @@ use App\Models\Post;
 use App\Models\Schedules\Schedule;
 use App\Services\Bots\Telegram\TelegramBot;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 use React\EventLoop\Factory;
 use React\EventLoop\LoopInterface;
 
@@ -35,16 +36,20 @@ class BotScheduler extends Command
                 $this->scheduleRun($schedule);
             });
         };
+        $schedule->refresh();
         if (!$schedule->expression->isDue()) {
             $intervalCall();
+            return;
         }
 
         /** @var Post $post */
-        $post = $schedule->action->actionModel;
+        $post = $schedule->action ? $schedule->action->actionModel : null;
         if ($post === null) {
-            return; // nothing to do with this schedule...
+            $this->info('nothing to do with schedule #' . $schedule->id . '...');
+            return;
         }
         foreach ($schedule->botChats as $chat) {
+            $this->info('Sending post #' . $post->id . ' to chat #' . $chat->id . '(' . $chat->chat_id . ') by schedule #' . $schedule->id . '...');
             (new TelegramBot($this->loop, $chat->bot))->sendMessage($chat, $post->message)->then($intervalCall, $intervalCall);
         }
     }
