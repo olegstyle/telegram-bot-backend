@@ -5,6 +5,7 @@ namespace App\Models\Schedules;
 use App\Models\BaseModel;
 use App\Models\BotChat;
 use App\Models\Traits\HasUser;
+use Cron\CronExpression;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -19,6 +20,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property int|null $day
  * @property int|null $month
  * @property int|null $week_day
+ * @property-read string $inlineExpression
+ * @property-read CronExpression $expression
  *
  * Relations
  * @property-read ScheduleAction $action
@@ -32,6 +35,16 @@ class Schedule extends BaseModel
     use HasUser;
 
     protected $casts = ['active' => 'bool'];
+
+    public function getInlineExpressionAttribute(): string
+    {
+        return ($this->minutes ?? '*') . ' ' . ($this->hours ?? '*') . ' ' . ($this->day ?? '*') . ' ' . ($this->month ?? '*') . ' ' . ($this->week_day ?? '*');
+    }
+
+    public function getExpressionAttribute(): CronExpression
+    {
+        return CronExpression::factory($this->expression);
+    }
 
     public function action(): HasOne
     {

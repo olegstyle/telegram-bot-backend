@@ -10,9 +10,9 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Fields
- * @property string action
- * @property int action_id
- * @property-read ?Model actionModel
+ * @property string $action
+ * @property int $action_id
+ * @property Model|null $actionModel
  */
 class ScheduleAction extends BaseModel
 {
