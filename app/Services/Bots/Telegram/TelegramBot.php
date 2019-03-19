@@ -19,6 +19,8 @@ use unreal4u\TelegramAPI\Abstracts\TraversableCustomType;
 use unreal4u\TelegramAPI\HttpClientRequestHandler;
 use unreal4u\TelegramAPI\Telegram\Methods\GetUpdates;
 use unreal4u\TelegramAPI\Telegram\Methods\SendMessage;
+use unreal4u\TelegramAPI\Telegram\Methods\SendPhoto;
+use unreal4u\TelegramAPI\Telegram\Types\Custom\InputFile;
 use unreal4u\TelegramAPI\Telegram\Types\Update;
 use unreal4u\TelegramAPI\TgLog;
 
@@ -39,7 +41,7 @@ class TelegramBot implements BotInterface
 
     public function run(): PromiseInterface
     {
-        $tgLog = $this->getTelegram($this->loop);
+        $tgLog = $this->getTelegram();
 
         $getUpdates = new GetUpdates();
         $getUpdates->offset = $this->getOffset();
@@ -54,9 +56,9 @@ class TelegramBot implements BotInterface
         );
     }
 
-    protected function getTelegram(LoopInterface $loop): TgLog
+    protected function getTelegram(): TgLog
     {
-        return new TgLog($this->bot->token, new HttpClientRequestHandler($loop), $this->logger);
+        return new TgLog($this->bot->token, new HttpClientRequestHandler($this->loop), $this->logger);
     }
 
     protected function getOffset(): int
@@ -179,10 +181,22 @@ class TelegramBot implements BotInterface
 
     public function sendMessage(BotChat $botChat, string $message, string $parseMode = 'Markdown'): PromiseInterface
     {
-        $tgLog = $this->getTelegram($this->loop);
+        $tgLog = $this->getTelegram();
         $sendMessage = new SendMessage();
         $sendMessage->chat_id = '@' . $botChat->chat_id;
         $sendMessage->text = $message;
+        $sendMessage->parse_mode = $parseMode;
+
+        return $tgLog->performApiRequest($sendMessage);
+    }
+
+    public function sendPhoto(BotChat $botChat, string $message, string $photoPath, string $parseMode = 'Markdown'): PromiseInterface
+    {
+        $tgLog = $this->getTelegram();
+        $sendMessage = new SendPhoto();
+        $sendMessage->chat_id = '@' . $botChat->chat_id;
+        $sendMessage->photo = new InputFile($photoPath);
+        $sendMessage->caption = $message;
         $sendMessage->parse_mode = $parseMode;
 
         return $tgLog->performApiRequest($sendMessage);

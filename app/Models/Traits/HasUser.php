@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * @property int user_id
  * @property-read User user()
- * @method static static whereUser(User $user)
+ * @method static static|Builder whereUser(User $user)
  * @mixin BaseModel
  */
 trait HasUser
