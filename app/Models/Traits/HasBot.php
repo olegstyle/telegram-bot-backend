@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * @property int bot_id
  * @property-read Bot bot()
- * @method static static whereBot(Bot $bot)
+ * @method static static|Builder whereBot(Bot $bot)
  * @mixin BaseModel
  */
 trait HasBot
