@@ -2,17 +2,23 @@
 
 namespace App\Services\Bots\Telegram;
 
+use App\Enums\BotChatSettingName;
+use App\Enums\ChatEvent;
 use App\Enums\Telegram\ChatType;
 use App\Models\Bot;
 use App\Models\BotChat;
+use App\Models\BotChatSetting;
+use App\Models\BotEvent;
 use App\Services\Bots\BotInterface;
 use Carbon\Carbon;
 use Closure;
 use Exception;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Log\Logger;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use React\EventLoop\LoopInterface;
+use React\Promise\FulfilledPromise;
 use React\Promise\Promise;
 use React\Promise\PromiseInterface;
 use unreal4u\TelegramAPI\Abstracts\TraversableCustomType;
@@ -41,6 +47,7 @@ class TelegramBot implements BotInterface
 
     public function run(): PromiseInterface
     {
+        $this->bot->refresh();
         $tgLog = $this->getTelegram();
 
         $getUpdates = new GetUpdates();
@@ -86,11 +93,6 @@ class TelegramBot implements BotInterface
         });
     }
 
-    protected function getChatById(string $chatId): ?BotChat
-    {
-        return $this->bot->chats->where('chat_id', $chatId)->first();
-    }
-
     protected function handleUpdate(Update $update): void
     {
         // skip offset id
@@ -103,7 +105,7 @@ class TelegramBot implements BotInterface
             return;
         }
 
-        if (! ChatType::isValid($message->chat->type) || ! (new ChatType($message->chat->type))->isSupported()) {
+        if (!ChatType::isValid($message->chat->type) || !(new ChatType($message->chat->type))->isSupported()) {
             return; // unknown chat type or not supported
         }
 
@@ -117,41 +119,63 @@ class TelegramBot implements BotInterface
             return;
         }
 
-        // TODO MOVE TO ANOTHER CLASS
-        // increment welcome message counter
-        $this->incrementWelcomeMessageCounter($chat);
-        if (!$this->shouldSendWelcomeMessage($chat)) {
-            return;
-        }
+        // TODO add to analytic table.
 
         $this->sendWelcomeMessage( // TODO MOVE PART OF CODE TO ANOTHER CLASS + EVENT
             $chat,
             $message->new_chat_member->first_name . ' ' . $message->new_chat_member->last_name,
-            $update->message->new_chat_member->id
+            (string) $update->message->new_chat_member->id
         );
     }
 
-    protected function sendWelcomeMessage(BotChat $botChat, string $username, $id): PromiseInterface // Move to another class
+    protected function getChatById(string $chatId): ?BotChat
     {
-        $welcomeList = [ // TODO - move data to BD
-            'Hello [' . $username . '](tg://user?id=' . $id . '). Welcome to the community!',
-            'Welcome [' . $username . '](tg://user?id=' . $id . ') to community. If you have any questions feel free to ask. We are here to help.',
-            'Hi [' . $username . '](tg://user?id=' . $id . ')! Welcome to our community! Check the pinned message in the top for general info. If you have any questions, feel free to ask!',
-            'Thank you for joining [' . $username . '](tg://user?id=' . $id . ')! Glad to have you here in our community. ',
-            'Hello [' . $username . '](tg://user?id=' . $id . ')! Welcome to Telegram group! We encourage you to read our pinned message containing links on our updates and further information or check out our website as well. If you have any feedback or questions, we will gladly answer them.',
-            'Welcome! We have a pinned message above to give you some basic details about our project, feel free to look around!',
-            'Thank you for joining our group! We are all happy to have you here. We offer 24/7 assistance for new and existing members so feel free to ask questions!',
-            'Hi, we\'re glad to have you here! Feel free to ask us any questions here!',
-        ];
+        return $this->bot->chats->where('chat_id', $chatId)->first();
+    }
 
-        return $this->sendMessage($botChat, $welcomeList[random_int(0, count($welcomeList) - 1)]);
+    protected function sendWelcomeMessage(BotChat $botChat, string $username, string $id): PromiseInterface // Move to another class
+    {
+        // increment welcome message counter
+        $this->incrementWelcomeMessageCounter($botChat);
+        if (!$this->shouldSendWelcomeMessage($botChat)) {
+            return new FulfilledPromise();
+        }
+        /** @var BotEvent[]|Collection $messageList */
+        $messageList = $botChat->events()->whereEvent(ChatEvent::NEW_MEMBER())->whereActive()->get();
+        if ($messageList->isEmpty()) {
+            return new FulfilledPromise();
+        }
+
+        $random = 0;
+        if ($messageList->count() > 1) {
+            try {
+                $random = random_int(0, $messageList->count() - 1);
+            } catch (Exception $e) {
+                Log::error('random_int not working :(');
+            }
+        }
+
+        /** @var BotEvent $message */
+        $message = $messageList->get($random);
+        $message = $message->message;
+        /** @var string $message */
+        $message = str_replace(
+            '%USERNAME%',
+            "[{$username}](tg://user?id={$id})",
+            $message
+        ); // TODO create message builder with variables
+
+        return $this->sendMessage($botChat, $message);
     }
 
     protected function incrementWelcomeMessageCounter(BotChat $botChat): void
     {
         $counter = $this->getWelcomeMessageCounter($botChat);
         $counter++;
-        if ($counter >= 1) { // TODO from database
+        /** @var BotChatSetting $setting */
+        $setting = $botChat->settings()->whereSetting(BotChatSettingName::WELCOME_MSG_DELAY())->first();
+        $setting = $setting ? (int) $setting->value : 1;
+        if ($counter >= $setting) {
             $counter = 0;
         }
         Cache::forever($this->getWelcomeMessageCounterCacheKey($botChat), $counter);
@@ -174,11 +198,6 @@ class TelegramBot implements BotInterface
         return $this->getWelcomeMessageCounter($botChat) === 0;
     }
 
-    protected function setOffset(int $offset): void
-    {
-        Cache::forever($this->getOffsetCacheKey(), $offset);
-    }
-
     public function sendMessage(BotChat $botChat, string $message, string $parseMode = 'Markdown'): PromiseInterface
     {
         $tgLog = $this->getTelegram();
@@ -188,6 +207,11 @@ class TelegramBot implements BotInterface
         $sendMessage->parse_mode = $parseMode;
 
         return $tgLog->performApiRequest($sendMessage);
+    }
+
+    protected function setOffset(int $offset): void
+    {
+        Cache::forever($this->getOffsetCacheKey(), $offset);
     }
 
     public function sendPhoto(BotChat $botChat, string $message, string $photoPath, string $parseMode = 'Markdown'): PromiseInterface
