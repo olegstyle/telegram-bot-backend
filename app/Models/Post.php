@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Traits\HasPhoto;
 use App\Models\Traits\HasUser;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -9,7 +10,7 @@ use Illuminate\Database\Eloquent\Builder;
  * Fields
  * @property string $title
  * @property string $message
- * @property string|null $photo_path -- TODO
+ * @property string|null $photo_path
  * @property bool $active
  *
  * Scopes
@@ -18,11 +19,22 @@ use Illuminate\Database\Eloquent\Builder;
 class Post extends BaseModel
 {
     use HasUser;
+    use HasPhoto;
 
     protected $casts = ['active' => 'bool'];
 
     public function scopeWhereActive(Builder $builder): Builder
     {
         return $builder->where('active', true);
+    }
+
+    public function getPhotoField(): string
+    {
+        return 'photo_path';
+    }
+
+    public function getDirName(): string
+    {
+        return 'posts/' . sha1((string) $this->user->id);
     }
 }
