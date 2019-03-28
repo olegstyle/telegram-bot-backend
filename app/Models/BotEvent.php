@@ -3,12 +3,14 @@
 namespace App\Models;
 
 use App\Enums\ChatEvent;
+use App\Models\Traits\HasPhoto;
+use App\Models\Traits\HasUser;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
  * @property int $event
  * @property string $message
- * @property string $photo_path -- TODO
+ * @property string $photo_path
  * @property bool $active
  *
  * @method static self|Builder whereActive()
@@ -16,6 +18,9 @@ use Illuminate\Database\Eloquent\Builder;
  */
 class BotEvent extends BaseModel
 {
+    use HasUser;
+    use HasPhoto;
+
     protected $table = 'bot_events';
 
     protected $casts = ['active' => 'bool'];
@@ -33,5 +38,15 @@ class BotEvent extends BaseModel
     public function getEvent(): ChatEvent
     {
         return new ChatEvent($this->event);
+    }
+
+    public function getPhotoField(): string
+    {
+        return 'photo_path';
+    }
+
+    public function getDirName(): string
+    {
+        return 'events/' . sha1((string) $this->user->id);
     }
 }
