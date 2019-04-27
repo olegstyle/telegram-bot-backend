@@ -21,18 +21,22 @@ class Run extends Command
     {
         $this->loop = Factory::create();
         foreach (Bot::with('chats')->get() as $bot) {
+            $this->info("Run bot #{$bot->id} {$bot->label}");
             $this->botRun(new TelegramBot($this->loop, $bot));
         }
         $this->loop->run();
     }
 
-    protected function botRun(TelegramBot $bot): void
+    protected function botRun(TelegramBot $bot, int $iteration = 1): void
     {
-        $intervalCall = function () use ($bot) {
-            $this->loop->addTimer(self::INTERVAL_BETWEEN_RUNS, function () use ($bot) {
-                $this->botRun($bot);
+        $iteration++;
+        $intervalCall = function () use ($bot, $iteration) {
+            $this->loop->addTimer(self::INTERVAL_BETWEEN_RUNS, function () use ($bot, $iteration) {
+                $this->info("Rerun bot #{$bot->getBot()->id} {$bot->getBot()->label}. Iteration: {$iteration}");
+                $this->botRun($bot, $iteration);
             });
         };
+
         $bot->run()->then($intervalCall, $intervalCall);
     }
 }
