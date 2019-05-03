@@ -25,6 +25,6 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
 
-        Passport::routes();
+        // Passport::routes(); // oauth disabled. Enable when it will be needed
     }
 }
