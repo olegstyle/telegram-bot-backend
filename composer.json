@@ -17,6 +17,7 @@
         "olegstyle/valueobject": "1.1.*",
         "ramsey/uuid": "^3.8",
         "react/event-loop": "^1.1",
+        "spatie/laravel-cors": "^1.5",
         "tymon/jwt-auth": "1.0.*",
         "unreal4u/telegram-api": "^3.4"
     },
