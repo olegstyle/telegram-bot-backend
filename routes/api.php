@@ -18,6 +18,4 @@ Route::group(['prefix' => 'auth'], static function () {
     Route::post('register', 'PassportController@register');
 });
 
-Route::middleware('auth:api')->get('user', static function (Request $request) {
-    return $request->user();
-});
+Route::middleware('auth:api')->get('users/current', 'PassportController@user');

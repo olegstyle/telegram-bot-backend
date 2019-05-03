@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Api;
 use App\Enums\TokenName;
 use App\Exceptions\Http\Auth\InvalidCredentials;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\JsonRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Resources\TokenResource;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 
 class PassportController extends Controller
@@ -34,5 +36,10 @@ class PassportController extends Controller
         $user = auth()->user();
 
         return new TokenResource($user->createToken(TokenName::API)->accessToken);
+    }
+
+    public function user(JsonRequest $request): UserResource
+    {
+        return new UserResource($request->user());
     }
 }
