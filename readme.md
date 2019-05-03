@@ -9,6 +9,7 @@
 0. `php artisan key:generate`
 0. `nano .env`  -- configure env (pusher keys are required)
 0. `php artisan migrate --seed`
+0. `php artisan passport:install`
 
 ## To Do ##
 
