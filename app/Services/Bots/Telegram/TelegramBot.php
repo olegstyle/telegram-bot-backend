@@ -2,6 +2,7 @@
 
 namespace App\Services\Bots\Telegram;
 
+use App\DataTransferObjects\Message;
 use App\Enums\BotChatSettingName;
 use App\Enums\ChatEvent;
 use App\Enums\Telegram\ChatType;
@@ -57,7 +58,7 @@ class TelegramBot implements BotInterface
             function (TraversableCustomType $updatesArray) {
                 return $this->handleUpdates($updatesArray);
             },
-            function (Exception $exception) {
+            static function (Exception $exception) {
                 Log::error('Exception ' . get_class($exception) . ' caught, message: ' . $exception->getMessage());
             }
         );
@@ -119,9 +120,9 @@ class TelegramBot implements BotInterface
             return;
         }
 
-        // TODO add to analytic table.
+        // FUTURE add to analytic table.
 
-        $this->sendWelcomeMessage( // TODO MOVE PART OF CODE TO ANOTHER CLASS + EVENT
+        $this->sendWelcomeMessage( // FUTURE MOVE PART OF CODE TO ANOTHER CLASS + EVENT
             $chat,
             $message->new_chat_member->first_name . ' ' . $message->new_chat_member->last_name,
             (string) $update->message->new_chat_member->id
@@ -165,7 +166,7 @@ class TelegramBot implements BotInterface
             $message
         ); // TODO create message builder with variables
 
-        return $this->sendMessage($botChat, $message);
+        return $this->sendMessage($botChat, new Message($message));
     }
 
     protected function incrementWelcomeMessageCounter(BotChat $botChat): void
@@ -198,33 +199,40 @@ class TelegramBot implements BotInterface
         return $this->getWelcomeMessageCounter($botChat) === 0;
     }
 
-    public function sendMessage(BotChat $botChat, string $message, string $parseMode = 'Markdown'): PromiseInterface
-    {
-        $tgLog = $this->getTelegram();
-        $sendMessage = new SendMessage();
-        $sendMessage->chat_id = '@' . $botChat->chat_id;
-        $sendMessage->text = $message;
-        $sendMessage->parse_mode = $parseMode;
-
-        return $tgLog->performApiRequest($sendMessage);
-    }
-
     protected function setOffset(int $offset): void
     {
         Cache::forever($this->getOffsetCacheKey(), $offset);
     }
 
-    public function sendPhoto(BotChat $botChat, string $message, string $photoPath, string $parseMode = 'Markdown'): PromiseInterface
-    {
-        $tgLog = $this->getTelegram();
-        $sendMessage = new SendPhoto();
-        $sendMessage->chat_id = '@' . $botChat->chat_id;
-        $sendMessage->photo = new InputFile($photoPath);
-        $sendMessage->caption = $message;
-        $sendMessage->parse_mode = $parseMode;
+    // TODO END REFACTOR TO ANOTHER EVENT CLASS
 
-        return $tgLog->performApiRequest($sendMessage);
+    public function sendMessage(BotChat $botChat, Message $message): PromiseInterface
+    {
+        if ($message->hasPhoto()) {
+            return $this->sendPhoto($botChat, $message);
+        }
+
+        $sendMessage = new SendMessage();
+        $sendMessage->chat_id = '@' . $botChat->chat_id;
+        $sendMessage->text = $message->getText();
+        $sendMessage->parse_mode = $message->getParseMode()->getValue();
+
+        return $this->getTelegram()->performApiRequest($sendMessage);
     }
 
-    // TODO END REFACTOR TO ANOTHER EVENT CLASS
+    private function sendPhoto(BotChat $botChat, Message $message): PromiseInterface
+    {
+        $sendMessage = new SendPhoto();
+        $sendMessage->chat_id = '@' . $botChat->chat_id;
+        $sendMessage->photo = new InputFile($message->getPhotoPath());
+        $sendMessage->caption = $message;
+        $sendMessage->parse_mode = $message->getParseMode()->getValue();
+
+        return $this->getTelegram()->performApiRequest($sendMessage);
+    }
+
+    public function getBot(): Bot
+    {
+        return $this->bot;
+    }
 }
