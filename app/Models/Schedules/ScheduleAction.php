@@ -7,6 +7,7 @@ use App\Models\BaseModel;
 use App\Models\Post;
 use App\Models\Traits\HasSchedule;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Fields
@@ -16,7 +17,10 @@ use Illuminate\Database\Eloquent\Model;
  */
 class ScheduleAction extends BaseModel
 {
-    use HasSchedule;
+    use HasSchedule,
+        SoftDeletes;
+
+    protected $table = 'schedule_actions';
 
     public function getActionModelAttribute(): ?Model
     {

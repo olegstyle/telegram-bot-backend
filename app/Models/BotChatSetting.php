@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Traits\HasBotChat;
 use Illuminate\Database\Eloquent\Builder;
 use App\Enums\BotChatSettingName;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * @property string $setting
@@ -14,7 +15,8 @@ use App\Enums\BotChatSettingName;
  */
 class BotChatSetting extends BaseModel
 {
-    use HasBotChat;
+    use HasBotChat,
+        SoftDeletes;
 
     protected $table = 'bot_chat_settings';
 
