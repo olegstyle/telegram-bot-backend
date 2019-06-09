@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Schedules\Schedule;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -24,6 +25,8 @@ use Laravel\Passport\HasApiTokens;
  * Appends
  * @property-read Bot[]|Collection $bots
  * @property-read BotChat[]|Collection $botChats
+ * @property-read Post[]|Collection $posts
+ * @property-read Schedule[]|Collection $schedules
  */
 class User extends Authenticatable
 {
@@ -46,5 +49,17 @@ class User extends Authenticatable
     public function botChats(): HasManyThrough
     {
         return $this->hasManyThrough(BotChat::class, Bot::class);
+    }
+
+    /** @return Post|HasMany */
+    public function posts(): HasMany
+    {
+        return $this->hasMany(Post::class);
+    }
+
+    /** @return Schedule|HasMany */
+    public function schedules(): HasMany
+    {
+        return $this->hasMany(Schedule::class);
     }
 }

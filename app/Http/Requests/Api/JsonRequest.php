@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Api;
 
+use App\Http\Requests\CommonRules;
 use App\Http\Responses\Error\ValidationErrorResponse;
 use App\Models\User;
 use Illuminate\Contracts\Validation\Rule;
@@ -22,6 +23,11 @@ class JsonRequest extends FormRequest
     public function rules(): array
     {
         return [];
+    }
+
+    protected function getCommonRules(): CommonRules
+    {
+        return app(CommonRules::class);
     }
 
     public function withValidator(Validator $validator): void
