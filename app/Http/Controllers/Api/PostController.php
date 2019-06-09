@@ -7,15 +7,15 @@ use App\Http\Requests\Api\JsonRequest;
 use App\Http\Requests\Posts\CreatePostRequest;
 use App\Http\Requests\Posts\UpdatePostRequest;
 use App\Http\Resources\PostResource;
-use App\Http\Resources\PostsResource;
+use App\Http\Resources\ResourceCollection;
 use App\Http\Responses\SuccessResponse;
 use App\Models\Post;
 
 class PostController extends Controller
 {
-    public function all(JsonRequest $request): PostsResource
+    public function all(JsonRequest $request): ResourceCollection
     {
-        return new PostsResource($request->user()->posts);
+        return new ResourceCollection($request->user()->posts);
     }
 
     public function get(Post $post): PostResource

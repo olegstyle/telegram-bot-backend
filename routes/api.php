@@ -24,7 +24,7 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::group(['prefix' => 'bots'], function () {
         Route::get('/', 'BotController@getBots');
         Route::get('/{bot}', 'BotController@getBot');
-        Route::post('/{bot}', 'BotController@createBot');
+        Route::post('/', 'BotController@createBot');
         Route::delete('/{bot}', 'BotController@deleteBot');
     });
 

@@ -5,16 +5,16 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\JsonRequest;
 use App\Http\Requests\Schedule\CreateOrUpdateScheduleRequest;
+use App\Http\Resources\ResourceCollection;
 use App\Http\Resources\ScheduleResource;
-use App\Http\Resources\SchedulesResource;
 use App\Http\Responses\SuccessResponse;
 use App\Models\Schedules\Schedule;
 
 class ScheduleController extends Controller
 {
-    public function all(JsonRequest $request): SchedulesResource
+    public function all(JsonRequest $request): ResourceCollection
     {
-        return new SchedulesResource($request->user()->schedules);
+        return new ResourceCollection($request->user()->schedules);
     }
 
     public function get(Schedule $schedule): ScheduleResource

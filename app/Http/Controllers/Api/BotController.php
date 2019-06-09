@@ -7,18 +7,17 @@ use App\Http\Requests\Api\JsonRequest;
 use App\Http\Requests\Bot\CreateOrUpdateBotChatRequest;
 use App\Http\Requests\Bot\CreateBotRequest;
 use App\Http\Resources\BotChatResource;
-use App\Http\Resources\BotChatsResource;
 use App\Http\Resources\BotResource;
-use App\Http\Resources\BotsResource;
+use App\Http\Resources\ResourceCollection;
 use App\Http\Responses\SuccessResponse;
 use App\Models\Bot;
 use App\Models\BotChat;
 
 class BotController extends Controller
 {
-    public function getBots(JsonRequest $request): BotsResource
+    public function getBots(JsonRequest $request): ResourceCollection
     {
-        return new BotsResource($request->user()->bots);
+        return new ResourceCollection($request->user()->bots);
     }
 
     public function getBot(Bot $bot): BotResource
@@ -44,9 +43,9 @@ class BotController extends Controller
         return new SuccessResponse();
     }
 
-    public function getBotChats(JsonRequest $request): BotChatsResource
+    public function getBotChats(JsonRequest $request): ResourceCollection
     {
-        return new BotChatsResource($request->user()->botChats);
+        return new ResourceCollection($request->user()->botChats);
     }
 
     public function getBotChat(BotChat $botChat): BotChatResource
