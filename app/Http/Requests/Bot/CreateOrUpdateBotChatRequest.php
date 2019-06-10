@@ -17,7 +17,7 @@ class CreateOrUpdateBotChatRequest extends JsonRequest
     {
         return [
             'label' => array_merge(['required'], $this->getCommonRules()->getBotLabel()),
-            'bot' => ['required', Rule::exists(Bot::getTableName(), Bot::getModelKeyName())->where('e_user', $this->user()->id)],
+            'bot' => ['required', 'numeric', Rule::exists(Bot::getTableName(), Bot::getModelKeyName())->where('user_id', $this->user()->id)],
             'chat' => ['required', 'string', 'min:1', 'max:191'],
         ];
     }
