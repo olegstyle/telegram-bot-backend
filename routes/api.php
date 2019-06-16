@@ -32,7 +32,7 @@ Route::group(['middleware' => 'auth:api'], function () {
         Route::get('/', 'BotController@getBotChats');
         Route::get('/{botChat}', 'BotController@getBotChat');
         Route::post('/', 'BotController@createBotChat');
-        Route::put('/{botChat}', 'BotController@updateBotChat');
+        Route::post('/{botChat}', 'BotController@updateBotChat');
         Route::delete('/{botChat}', 'BotController@deleteBotChat');
     });
 
@@ -40,7 +40,7 @@ Route::group(['middleware' => 'auth:api'], function () {
         Route::get('/', 'PostController@all');
         Route::get('/{post}', 'PostController@get');
         Route::post('/', 'PostController@create');
-        Route::put('/{post}', 'PostController@update');
+        Route::post('/{post}', 'PostController@update');
         Route::delete('/{post}', 'PostController@delete');
     });
 
@@ -48,7 +48,7 @@ Route::group(['middleware' => 'auth:api'], function () {
         Route::get('/', 'ScheduleController@all');
         Route::get('/{schedule}', 'ScheduleController@get');
         Route::post('/', 'ScheduleController@create');
-        Route::put('/{schedule}', 'ScheduleController@update');
+        Route::post('/{schedule}', 'ScheduleController@update');
         Route::delete('/{schedule}', 'ScheduleController@delete');
     });
 });

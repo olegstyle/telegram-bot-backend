@@ -65,9 +65,14 @@ class Schedule extends BaseModel
         return $builder->where('active', true);
     }
 
-    protected function explodeData(?string $data): array
+    public function explodeData(?string $data): ?array
     {
         return $data ? array_map('trim', explode(',', $data)) : null;
+    }
+
+    public function implodeData(?array $data): ?string
+    {
+        return $data ? implode(',', $data) : null;
     }
 
     public function getMinutes(): ?array

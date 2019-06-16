@@ -21,7 +21,7 @@ class PostResource extends JsonResource
             'id' => $this->resource->id,
             'title' => $this->resource->title,
             'message' => $this->resource->message,
-            'photoPath' => $this->resource->getPhotoPath(),
+            'photoPath' => $this->resource->getPhotoHttpPath(),
             'active' => $this->resource->active,
         ];
     }

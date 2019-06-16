@@ -6,6 +6,7 @@
 0. `sudo chmod -R ug+rwx storage bootstrap/cache` -- only for Linux
 0. `composer install`
 0. `cp .env.example .env`
+0. `php artisan storage:link`
 0. `php artisan key:generate`
 0. `nano .env`  -- configure env (pusher keys are required)
 0. `php artisan migrate --seed`

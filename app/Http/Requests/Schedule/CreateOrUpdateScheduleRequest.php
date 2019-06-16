@@ -20,15 +20,15 @@ class CreateOrUpdateScheduleRequest extends JsonRequest
         return [
             'title' => array_merge(['required'], $this->getCommonRules()->getBotLabel()),
             'minutes' => ['nullable', 'array'],
-            'minutes.*' => ['required', 'number', 'min:0', 'max:59'],
+            'minutes.*' => ['required', 'numeric', 'min:0', 'max:59'],
             'hours' => ['nullable', 'array'],
-            'hours.*' => ['required', 'number', 'min:0', 'max:23'],
+            'hours.*' => ['required', 'numeric', 'min:0', 'max:23'],
             'day' => ['nullable', 'array'],
-            'day.*' => ['required', 'number', 'min:1', 'max:31'],
+            'day.*' => ['required', 'numeric', 'min:1', 'max:31'],
             'month' => ['nullable', 'array'],
-            'month.*' => ['required', 'number', 'min:1', 'max:12'],
+            'month.*' => ['required', 'numeric', 'min:1', 'max:12'],
             'weekDay' => ['nullable', 'array'],
-            'weekDay.*' => ['required', 'number', 'min:0', 'max:6'],
+            'weekDay.*' => ['required', 'numeric', 'min:0', 'max:6'],
             'active' => ['nullable', 'boolean'],
         ];
     }
@@ -53,7 +53,7 @@ class CreateOrUpdateScheduleRequest extends JsonRequest
         return $this->month ? array_unique($this->month) : null;
     }
 
-    public function getWeekDay(): ?int
+    public function getWeekDay(): ?array
     {
         return $this->weekDay ? array_unique($this->weekDay) : null;
     }

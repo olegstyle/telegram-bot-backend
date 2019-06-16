@@ -26,6 +26,7 @@ class PostController extends Controller
     public function create(CreatePostRequest $request): PostResource
     {
         $post = new Post();
+        $post->user()->associate($request->user());
         $post->title = $request->title;
         $post->message = $request->message;
         $post->active = $request->isActive();

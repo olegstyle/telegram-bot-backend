@@ -44,11 +44,11 @@ class ScheduleController extends Controller
         $schedule->user()->associate($request->user());
         $schedule->title = $request->title;
         $schedule->active = $request->isActive();
-        $schedule->minutes = $request->getMinutes();
-        $schedule->hours = $request->getHours();
-        $schedule->day = $request->getDay();
-        $schedule->month = $request->getMonth();
-        $schedule->week_day = $request->getWeekDay();
+        $schedule->minutes = $schedule->implodeData($request->getMinutes());
+        $schedule->hours = $schedule->implodeData($request->getHours());
+        $schedule->day = $schedule->implodeData($request->getDay());
+        $schedule->month = $schedule->implodeData($request->getMonth());
+        $schedule->week_day = $schedule->implodeData($request->getWeekDay());
         $schedule->save();
 
         return $schedule;
