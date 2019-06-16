@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Traits\HasPhoto;
 use App\Models\Traits\HasUser;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Fields
@@ -18,8 +19,11 @@ use Illuminate\Database\Eloquent\Builder;
  */
 class Post extends BaseModel
 {
-    use HasUser;
-    use HasPhoto;
+    use HasUser,
+        HasPhoto,
+        SoftDeletes;
+
+    protected $table = 'posts';
 
     protected $casts = ['active' => 'bool'];
 

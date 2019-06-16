@@ -6,6 +6,7 @@ use App\Models\Traits\HasBot;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * @property string $label
@@ -16,7 +17,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class BotChat extends BaseModel
 {
-    use HasBot;
+    use HasBot,
+        SoftDeletes;
 
     protected $table = 'bot_chats';
 

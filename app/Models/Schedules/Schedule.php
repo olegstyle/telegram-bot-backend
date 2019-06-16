@@ -10,16 +10,17 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Fields
  * @property string $title
  * @property bool $active
- * @property int|null $minutes
- * @property int|null $hours
- * @property int|null $day
- * @property int|null $month
- * @property int|null $week_day
+ * @property string|null $minutes
+ * @property string|null $hours
+ * @property string|null $day
+ * @property string|null $month
+ * @property string|null $week_day
  * @property-read string $inlineExpression
  * @property-read CronExpression $expression
  *
@@ -32,7 +33,10 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  */
 class Schedule extends BaseModel
 {
-    use HasUser;
+    use HasUser,
+        SoftDeletes;
+
+    protected $table = 'schedules';
 
     protected $casts = ['active' => 'bool'];
 
@@ -59,5 +63,40 @@ class Schedule extends BaseModel
     public function scopeWhereActive(Builder $builder): Builder
     {
         return $builder->where('active', true);
+    }
+
+    public function explodeData(?string $data): ?array
+    {
+        return $data ? array_map('trim', explode(',', $data)) : null;
+    }
+
+    public function implodeData(?array $data): ?string
+    {
+        return $data ? implode(',', $data) : null;
+    }
+
+    public function getMinutes(): ?array
+    {
+        return $this->explodeData($this->minutes);
+    }
+
+    public function getHours(): ?array
+    {
+        return $this->explodeData($this->hours);
+    }
+
+    public function getDay(): ?array
+    {
+        return $this->explodeData($this->day);
+    }
+
+    public function getMonth(): ?array
+    {
+        return $this->explodeData($this->month);
+    }
+
+    public function getWeekDay(): ?array
+    {
+        return $this->explodeData($this->week_day);
     }
 }

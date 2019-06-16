@@ -6,6 +6,7 @@ use App\Models\Traits\HasUser;
 use App\Models\Traits\HasEncryptedFields;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * @property string $label
@@ -15,8 +16,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Bot extends BaseModel
 {
-    use HasEncryptedFields;
-    use HasUser;
+    use HasEncryptedFields,
+        HasUser,
+        SoftDeletes;
 
     protected $table = 'bots';
 

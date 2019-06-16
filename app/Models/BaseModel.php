@@ -8,7 +8,6 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
- *
  * Fields
  * @property int $id
  * @property Carbon created_at
@@ -47,4 +46,10 @@ abstract class BaseModel extends Model
     {
         return app(static::class)->getTable();
     }
+
+    public static function getModelKeyName(): string
+    {
+        return app(static::class)->getKeyName();
+    }
+
 }

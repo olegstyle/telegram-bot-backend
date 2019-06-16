@@ -6,6 +6,7 @@ use App\Enums\ChatEvent;
 use App\Models\Traits\HasPhoto;
 use App\Models\Traits\HasUser;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * @property int $event
@@ -18,8 +19,9 @@ use Illuminate\Database\Eloquent\Builder;
  */
 class BotEvent extends BaseModel
 {
-    use HasUser;
-    use HasPhoto;
+    use HasUser,
+        HasPhoto,
+        SoftDeletes;
 
     protected $table = 'bot_events';
 
