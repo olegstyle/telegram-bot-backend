@@ -21,13 +21,6 @@ Route::group(['prefix' => 'auth'], function () {
 Route::middleware('auth:api')->get('users/current', 'PassportController@user');
 
 Route::group(['middleware' => 'auth:api'], function () {
-    Route::group(['prefix' => 'bots'], function () {
-        Route::get('/', 'BotController@getBots');
-        Route::get('/{bot}', 'BotController@getBot');
-        Route::post('/', 'BotController@createBot');
-        Route::delete('/{bot}', 'BotController@deleteBot');
-    });
-
     Route::group(['prefix' => 'bots/chats'], function () {
         Route::get('/', 'BotController@getBotChats');
         Route::get('/{botChat}', 'BotController@getBotChat');
@@ -36,12 +29,20 @@ Route::group(['middleware' => 'auth:api'], function () {
         Route::delete('/{botChat}', 'BotController@deleteBotChat');
     });
 
+    Route::group(['prefix' => 'bots'], function () {
+        Route::get('/', 'BotController@getBots');
+        Route::get('/{bot}', 'BotController@getBot');
+        Route::post('/', 'BotController@createBot');
+        Route::delete('/{bot}', 'BotController@deleteBot');
+    });
+
     Route::group(['prefix' => 'posts'], function () {
         Route::get('/', 'PostController@all');
         Route::get('/{post}', 'PostController@get');
         Route::post('/', 'PostController@create');
         Route::post('/{post}', 'PostController@update');
         Route::delete('/{post}', 'PostController@delete');
+        Route::post('/{post}/immediately/{botChat}', 'PostController@immediatelySend');
     });
 
     Route::group(['prefix' => 'schedules'], function () {
