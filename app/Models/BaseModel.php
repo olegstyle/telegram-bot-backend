@@ -17,6 +17,7 @@ use Illuminate\Support\Str;
  * @method static Builder|static whereId(int|string $id)
  * @method static Builder|static whereIds(array $id)
  * @method static Builder|static orderDescByCreatedAt()
+ * @method static Builder|static orderDescById()
  *
  * @mixin Builder
  */
@@ -39,8 +40,14 @@ abstract class BaseModel extends Model
 
     public function scopeOrderDescByCreatedAt(Builder $builder): Builder
     {
-        return $builder->orderByDesc('h_created_at');
+        return $builder->orderByDesc('created_at');
     }
+
+    public function scopeOrderDescById(Builder $builder): Builder
+    {
+        return $builder->orderByDesc('id');
+    }
+
 
     public static function getTableName(): string
     {
@@ -51,5 +58,4 @@ abstract class BaseModel extends Model
     {
         return app(static::class)->getKeyName();
     }
-
 }

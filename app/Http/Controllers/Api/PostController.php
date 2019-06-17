@@ -15,7 +15,7 @@ class PostController extends Controller
 {
     public function all(JsonRequest $request): ResourceCollection
     {
-        return new ResourceCollection($request->user()->posts);
+        return new ResourceCollection($request->user()->posts()->orderDescById()->get());
     }
 
     public function get(Post $post): PostResource

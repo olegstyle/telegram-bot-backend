@@ -17,7 +17,7 @@ class BotController extends Controller
 {
     public function getBots(JsonRequest $request): ResourceCollection
     {
-        return new ResourceCollection($request->user()->bots);
+        return new ResourceCollection($request->user()->bots()->orderDescById()->get());
     }
 
     public function getBot(Bot $bot): BotResource
@@ -45,7 +45,7 @@ class BotController extends Controller
 
     public function getBotChats(JsonRequest $request): ResourceCollection
     {
-        return new ResourceCollection($request->user()->botChats);
+        return new ResourceCollection($request->user()->botChats()->orderDescById()->get());
     }
 
     public function getBotChat(BotChat $botChat): BotChatResource

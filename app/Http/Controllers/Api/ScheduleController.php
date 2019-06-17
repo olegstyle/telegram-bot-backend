@@ -14,7 +14,7 @@ class ScheduleController extends Controller
 {
     public function all(JsonRequest $request): ResourceCollection
     {
-        return new ResourceCollection($request->user()->schedules);
+        return new ResourceCollection($request->user()->schedules()->orderDescById()->get());
     }
 
     public function get(Schedule $schedule): ScheduleResource
