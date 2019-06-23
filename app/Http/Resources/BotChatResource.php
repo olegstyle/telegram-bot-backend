@@ -9,19 +9,26 @@ class BotChatResource extends JsonResource
 {
     /** @var BotChat */
     public $resource;
+    public $returnBots;
 
-    public function __construct(BotChat $resource)
+    public function __construct(BotChat $resource, bool $returnBots = true)
     {
         parent::__construct($resource);
+        $this->returnBots = $returnBots;
     }
 
     public function toArray($request): array
     {
-        return [
+        $data = [
             'id' => $this->resource->id,
             'label' => $this->resource->label,
             'chat' => $this->resource->chat_id,
-            'bot' => (new BotResource($this->resource->bot))->toArray($request),
         ];
+
+        if ($this->returnBots) {
+            $data['bot'] = (new BotResource($this->resource->bot, false))->toArray($request);
+        }
+
+        return $data;
     }
 }

@@ -7,11 +7,8 @@ use OlegStyle\ValueObject\ValueObject;
 
 class Message extends ValueObject
 {
-    /** @var string */
     protected $text;
-    /** @var string|null */
     protected $photoPath;
-    /** @var ParseMode */
     protected $parseMode;
 
     public function __construct(string $text, ?ParseMode $parseMode = null)

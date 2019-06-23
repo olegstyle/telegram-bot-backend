@@ -2,11 +2,11 @@
 
 namespace App\Console\Commands;
 
+use App\DataTransferObjects\Message;
 use App\Models\Post;
 use App\Models\Schedules\Schedule;
 use App\Services\Bots\Telegram\TelegramBot;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Log;
 use React\EventLoop\Factory;
 use React\EventLoop\LoopInterface;
 
@@ -50,7 +50,11 @@ class BotScheduler extends Command
         }
         foreach ($schedule->botChats as $chat) {
             $this->info('Sending post #' . $post->id . ' to chat #' . $chat->id . '(' . $chat->chat_id . ') by schedule #' . $schedule->id . '...');
-            (new TelegramBot($this->loop, $chat->bot))->sendMessage($chat, $post->message)->then($intervalCall, $intervalCall);
+            $message = new Message($post->message);
+            $message->setPhotoPath($post->getPhotoFullPath());
+            (new TelegramBot($this->loop, $chat->bot))
+                ->sendMessage($chat, $message)
+                ->then($intervalCall, $intervalCall);
         }
     }
 }

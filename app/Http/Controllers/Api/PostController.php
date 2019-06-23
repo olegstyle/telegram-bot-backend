@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\DataTransferObjects\Message;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\JsonRequest;
 use App\Http\Requests\Posts\CreatePostRequest;
@@ -9,13 +10,16 @@ use App\Http\Requests\Posts\UpdatePostRequest;
 use App\Http\Resources\PostResource;
 use App\Http\Resources\ResourceCollection;
 use App\Http\Responses\SuccessResponse;
+use App\Models\BotChat;
 use App\Models\Post;
+use App\Services\Bots\Telegram\TelegramBot;
+use React\EventLoop\Factory;
 
 class PostController extends Controller
 {
     public function all(JsonRequest $request): ResourceCollection
     {
-        return new ResourceCollection($request->user()->posts);
+        return new ResourceCollection($request->user()->posts()->orderDescById()->get());
     }
 
     public function get(Post $post): PostResource
@@ -60,6 +64,18 @@ class PostController extends Controller
     public function delete(Post $post): SuccessResponse
     {
         $post->delete();
+
+        return new SuccessResponse();
+    }
+
+    public function immediatelySend(Post $post, BotChat $botChat): SuccessResponse
+    {
+        $loop = Factory::create();
+        $message = new Message($post->message);
+        $message->setPhotoPath($post->getPhotoFullPath());
+        // TODO use bot factory
+        (new TelegramBot($loop, $botChat->bot))->sendMessage($botChat, $message);
+        $loop->run();
 
         return new SuccessResponse();
     }
