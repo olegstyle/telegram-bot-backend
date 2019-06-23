@@ -225,7 +225,7 @@ class TelegramBot implements BotInterface
         $sendMessage = new SendPhoto();
         $sendMessage->chat_id = '@' . $botChat->chat_id;
         $sendMessage->photo = new InputFile($message->getPhotoPath());
-        $sendMessage->caption = $message;
+        $sendMessage->caption = $message->getText();
         $sendMessage->parse_mode = $message->getParseMode()->getValue();
 
         return $this->getTelegram()->performApiRequest($sendMessage);
