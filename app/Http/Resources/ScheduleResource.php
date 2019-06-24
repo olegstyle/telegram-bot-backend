@@ -17,15 +17,18 @@ class ScheduleResource extends JsonResource
 
     public function toArray($request): array
     {
+        /** @noinspection PhpParamsInspection */
+        $action = $this->resource->action->actionModel ?
+            (new PostResource($this->resource->action->actionModel))->toArray($request) :
+            null;
+
         return [
             'id' => $this->resource->id,
             'title' => $this->resource->title,
             'active' => $this->resource->active,
-            'minutes' => $this->resource->getMinutes(),
-            'hours' => $this->resource->getHours(),
-            'day' => $this->resource->getDay(),
-            'month' => $this->resource->getMonth(),
-            'weekDay' => $this->resource->getWeekDay(),
+            'expression' => $this->resource->getInlineExpressionAttribute(),
+            'actionType' => $this->resource->action->getAction()->getValue(),
+            'action' => $action,
         ];
     }
 }

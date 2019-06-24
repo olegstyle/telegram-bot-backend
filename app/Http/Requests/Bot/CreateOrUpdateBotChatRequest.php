@@ -4,11 +4,10 @@ namespace App\Http\Requests\Bot;
 
 use App\Http\Requests\Api\JsonRequest;
 use App\Models\Bot;
-use Illuminate\Validation\Rule;
 
 /**
  * @property-read string $label
- * @property-read int $bot
+ * @property-read string $bot
  * @property-read string $chat
  */
 class CreateOrUpdateBotChatRequest extends JsonRequest
@@ -17,7 +16,7 @@ class CreateOrUpdateBotChatRequest extends JsonRequest
     {
         return [
             'label' => array_merge(['required'], $this->getCommonRules()->getBotLabel()),
-            'bot' => ['required', 'numeric', Rule::exists(Bot::getTableName(), Bot::getModelKeyName())->where('user_id', $this->user()->id)],
+            'bot' => ['required', 'numeric', $this->modelExists(app(Bot::class), $this->user())],
             'chat' => ['required', 'string', 'min:1', 'max:191'],
         ];
     }
