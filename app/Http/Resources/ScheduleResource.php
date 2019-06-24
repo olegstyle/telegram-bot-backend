@@ -18,7 +18,7 @@ class ScheduleResource extends JsonResource
     public function toArray($request): array
     {
         /** @noinspection PhpParamsInspection */
-        $action = $this->resource->action->actionModel ?
+        $action = $this->resource->action && $this->resource->action->actionModel ?
             (new PostResource($this->resource->action->actionModel))->toArray($request) :
             null;
 

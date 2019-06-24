@@ -67,6 +67,7 @@ class ScheduleController extends Controller
         $schedule->save();
         $action->schedule()->associate($schedule);
         $action->save();
+        $schedule->load('action');
 
         DB::commit();
 
