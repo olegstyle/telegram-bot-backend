@@ -13,7 +13,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * Fields
  * @property string $action
  * @property int $action_id
- * @property Model|null $actionModel
+ *
+ * Appends
+ * @property-read Model|null $actionModel
  */
 class ScheduleAction extends BaseModel
 {

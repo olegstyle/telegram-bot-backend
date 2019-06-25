@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\Action;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\JsonRequest;
 use App\Http\Requests\Schedule\CreateOrUpdateScheduleRequest;
@@ -9,12 +10,14 @@ use App\Http\Resources\ResourceCollection;
 use App\Http\Resources\ScheduleResource;
 use App\Http\Responses\SuccessResponse;
 use App\Models\Schedules\Schedule;
+use App\Models\Schedules\ScheduleAction;
+use Illuminate\Support\Facades\DB;
 
 class ScheduleController extends Controller
 {
     public function all(JsonRequest $request): ResourceCollection
     {
-        return new ResourceCollection($request->user()->schedules()->orderDescById()->get());
+        return new ResourceCollection($request->user()->schedules()->orderDescById()->with(['action'])->get());
     }
 
     public function get(Schedule $schedule): ScheduleResource
@@ -44,12 +47,29 @@ class ScheduleController extends Controller
         $schedule->user()->associate($request->user());
         $schedule->title = $request->title;
         $schedule->active = $request->isActive();
-        $schedule->minutes = $schedule->implodeData($request->getMinutes());
-        $schedule->hours = $schedule->implodeData($request->getHours());
-        $schedule->day = $schedule->implodeData($request->getDay());
-        $schedule->month = $schedule->implodeData($request->getMonth());
-        $schedule->week_day = $schedule->implodeData($request->getWeekDay());
+
+        $parts = explode(' ', $request->expression);
+        $schedule->minutes = $parts[0];
+        $schedule->hours = $parts[1];
+        $schedule->day = $parts[2];
+        $schedule->month = $parts[3];
+        $schedule->week_day = $parts[4];
+
+        $action = $schedule->action;
+        if (!$action) {
+            $action = new ScheduleAction();
+        }
+        $action->action = Action::POST;
+        $action->action_id = $request->actionId;
+
+        DB::beginTransaction();
+
         $schedule->save();
+        $action->schedule()->associate($schedule);
+        $action->save();
+        $schedule->load('action');
+
+        DB::commit();
 
         return $schedule;
     }
