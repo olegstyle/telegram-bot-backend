@@ -4,12 +4,13 @@ namespace App\Http\Requests\Schedule;
 
 use App\Http\Requests\Api\JsonRequest;
 use App\Http\Requests\Rules\CronExpression;
-use App\Models\BotChat;
+use App\Http\Requests\Rules\HasAccessToBotChat;
 use App\Models\Post;
 
 /**
  * @property-read string $title
  * @property-read string $expression
+ * @property-read array $botChats
  * @property-read string $actionId
  * @property-read string|null $active
  */
@@ -21,8 +22,8 @@ class CreateOrUpdateScheduleRequest extends JsonRequest
             'title' => array_merge(['required'], $this->getCommonRules()->getBotLabel()),
             'expression' => ['required', 'string', new CronExpression()],
             'actionId' => ['nullable', 'numeric', $this->modelExists(app(Post::class), $this->user())],
-            'botChats' => ['bail', 'required', 'array'],
-            'botChats.*' => ['required', 'numeric', $this->modelExists(app(BotChat::class), $this->user())],
+            'botChats' => ['bail', 'required', 'array', 'min:1', new HasAccessToBotChat($this->user())],
+            'botChats.*' => ['required', 'numeric'],
             'active' => ['nullable', 'boolean'],
         ];
     }

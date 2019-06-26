@@ -17,7 +17,7 @@ class ScheduleController extends Controller
 {
     public function all(JsonRequest $request): ResourceCollection
     {
-        return new ResourceCollection($request->user()->schedules()->orderDescById()->with(['action'])->get());
+        return new ResourceCollection($request->user()->schedules()->orderDescById()->with(['action', 'botChats'])->get());
     }
 
     public function get(Schedule $schedule): ScheduleResource
@@ -67,10 +67,27 @@ class ScheduleController extends Controller
         $schedule->save();
         $action->schedule()->associate($schedule);
         $action->save();
-        $schedule->load('action');
+        $this->replaceScheduleChats($schedule, $request->botChats);
+
+        $schedule->load(['action', 'botChats']);
 
         DB::commit();
 
         return $schedule;
+    }
+
+    private function replaceScheduleChats(Schedule $schedule, array $botChatIds): void
+    {
+        $botChatIds = array_map('intval', $botChatIds);
+        $schedule->load('botChats');
+        $existIds = $schedule->botChats->pluck('id')->toArray();
+
+        Schedule::removeBotChats(array_filter($existIds, static function (int $id) use ($botChatIds) {
+            return !in_array($id, $botChatIds, true);
+        }));
+
+        $schedule->bulkInsertBotChats(array_filter($botChatIds, static function (int $id) use ($existIds) {
+            return !in_array($id, $existIds, true);
+        }));
     }
 }
