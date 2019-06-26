@@ -48,13 +48,14 @@ class BotScheduler extends Command
             $this->info('nothing to do with schedule #' . $schedule->id . '...');
             return;
         }
+
         foreach ($schedule->botChats as $chat) {
             $this->info('Sending post #' . $post->id . ' to chat #' . $chat->id . '(' . $chat->chat_id . ') by schedule #' . $schedule->id . '...');
             $message = new Message($post->message);
             $message->setPhotoPath($post->getPhotoFullPath());
-            (new TelegramBot($this->loop, $chat->bot))
-                ->sendMessage($chat, $message)
-                ->then($intervalCall, $intervalCall);
+            (new TelegramBot($this->loop, $chat->bot))->sendMessage($chat, $message);
         }
+
+        $intervalCall();
     }
 }
