@@ -4,6 +4,7 @@ namespace App\Http\Requests\Schedule;
 
 use App\Http\Requests\Api\JsonRequest;
 use App\Http\Requests\Rules\CronExpression;
+use App\Models\BotChat;
 use App\Models\Post;
 
 /**
@@ -20,6 +21,8 @@ class CreateOrUpdateScheduleRequest extends JsonRequest
             'title' => array_merge(['required'], $this->getCommonRules()->getBotLabel()),
             'expression' => ['required', 'string', new CronExpression()],
             'actionId' => ['nullable', 'numeric', $this->modelExists(app(Post::class), $this->user())],
+            'botChats' => ['bail', 'required', 'array'],
+            'botChats.*' => ['required', 'numeric', $this->modelExists(app(BotChat::class), $this->user())],
             'active' => ['nullable', 'boolean'],
         ];
     }
