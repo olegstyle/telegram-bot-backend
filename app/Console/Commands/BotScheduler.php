@@ -23,10 +23,33 @@ class BotScheduler extends Command
     public function handle(): void
     {
         $this->loop = Factory::create();
+        $this->restartCheck();
         foreach (Schedule::all() as $schedule) {
             $this->scheduleRun($schedule);
         }
         $this->loop->run();
+        /** @noinspection PhpUnhandledExceptionInspection */
+        cache()->forget(RestartBots::getCacheKey(self::class));
+    }
+
+    protected function restartCheck(): void
+    {
+        $this->loop->addTimer(5, function () {
+            if (!$this->restartReceived()) {
+                $this->restartCheck();
+            }
+        });
+    }
+
+    protected function restartReceived(): bool
+    {
+        /** @noinspection PhpUnhandledExceptionInspection */
+        if (cache()->has(RestartBots::getCacheKey(self::class))) {
+            $this->loop->stop();
+            return true;
+        }
+
+        return false;
     }
 
     protected function scheduleRun(Schedule $schedule): void
