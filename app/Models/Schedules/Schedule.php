@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Fields
@@ -36,6 +37,8 @@ class Schedule extends BaseModel
     use HasUser,
         SoftDeletes;
 
+    public const BOT_CHAT_BELONGS_TABLE = 'schedule_to_bot_chats';
+
     protected $table = 'schedules';
 
     protected $casts = ['active' => 'bool'];
@@ -57,11 +60,38 @@ class Schedule extends BaseModel
 
     public function botChats(): BelongsToMany
     {
-        return $this->belongsToMany(BotChat::class, 'schedule_to_bot_chats');
+        return $this->belongsToMany(BotChat::class, self::BOT_CHAT_BELONGS_TABLE);
     }
 
     public function scopeWhereActive(Builder $builder): Builder
     {
         return $builder->where('active', true);
+    }
+
+    public static function removeBotChats(array $botChatIds): void
+    {
+        if (empty($botChatIds)) {
+            return;
+        }
+        DB::table(self::BOT_CHAT_BELONGS_TABLE)
+            ->whereIn(BotChat::getModelForeignKey(), $botChatIds)
+            ->delete();
+    }
+
+    public function bulkInsertBotChats(array $botChatIds): void
+    {
+        if (empty($botChatIds)) {
+            return;
+        }
+
+        $data = [];
+        foreach ($botChatIds as $botChatId) {
+            $data[] = [
+                $this->getForeignKey() => $this->id,
+                BotChat::getModelForeignKey() => $botChatId,
+            ];
+        }
+
+        DB::table(self::BOT_CHAT_BELONGS_TABLE)->insert($data);
     }
 }

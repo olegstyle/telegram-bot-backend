@@ -28,6 +28,7 @@ class ScheduleResource extends JsonResource
             'active' => $this->resource->active,
             'expression' => $this->resource->getInlineExpressionAttribute(),
             'actionType' => $this->resource->action->getAction()->getValue(),
+            'botChats' => (new ResourceCollection($this->resource->botChats))->toArray($request),
             'action' => $action,
         ];
     }

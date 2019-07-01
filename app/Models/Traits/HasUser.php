@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int user_id
  * @property-read User user()
  * @method static static|Builder whereUser(User $user)
+ * @method static static|Builder whereNotUser(User $user)
  * @mixin BaseModel
  */
 trait HasUser
@@ -23,5 +24,10 @@ trait HasUser
     public function scopeWhereUser(Builder $builder, User $user): Builder
     {
         return $builder->where('user_id', $user->id);
+    }
+
+    public function scopeWhereNotUser(Builder $builder, User $user): Builder
+    {
+        return $builder->where('user_id', '!=', $user->id);
     }
 }

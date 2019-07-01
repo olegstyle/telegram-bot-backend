@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands\Telegram;
 
+use App\Console\Commands\RestartBots;
 use App\Models\Bot;
 use App\Services\Bots\Telegram\TelegramBot;
 use Illuminate\Console\Command;
@@ -20,11 +21,34 @@ class Run extends Command
     public function handle(): void
     {
         $this->loop = Factory::create();
+        $this->restartCheck();
         foreach (Bot::with('chats')->get() as $bot) {
             $this->info("Run bot #{$bot->id} {$bot->label}");
             $this->botRun(new TelegramBot($this->loop, $bot));
         }
         $this->loop->run();
+        /** @noinspection PhpUnhandledExceptionInspection */
+        cache()->forget(RestartBots::getCacheKey(self::class));
+    }
+
+    protected function restartCheck(): void
+    {
+        $this->loop->addTimer(5, function () {
+            if (!$this->restartReceived()) {
+                $this->restartCheck();
+            }
+        });
+    }
+
+    protected function restartReceived(): bool
+    {
+        /** @noinspection PhpUnhandledExceptionInspection */
+        if (cache()->has(RestartBots::getCacheKey(self::class))) {
+            $this->loop->stop();
+            return true;
+        }
+
+        return false;
     }
 
     protected function botRun(TelegramBot $bot, int $iteration = 1): void

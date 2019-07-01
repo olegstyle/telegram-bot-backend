@@ -48,7 +48,6 @@ abstract class BaseModel extends Model
         return $builder->orderByDesc('id');
     }
 
-
     public static function getTableName(): string
     {
         return app(static::class)->getTable();
@@ -57,5 +56,10 @@ abstract class BaseModel extends Model
     public static function getModelKeyName(): string
     {
         return app(static::class)->getKeyName();
+    }
+
+    public static function getModelForeignKey(): string
+    {
+        return app(static::class)->getForeignKey();
     }
 }
